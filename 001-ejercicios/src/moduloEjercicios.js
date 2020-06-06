@@ -23,8 +23,27 @@ import basededatos from './basededatos';
  */
 export const materiasAprobadasByNombreAlumno = (nombreAlumno) => {
   // Ejemplo de como accedo a datos dentro de la base de datos
+  let materiasAprobadas = [];
+  let k = 0;
+
+  for (let i=0; i < basededatos.alumnos.length; i++)
+  {
+    if (basededatos.alumnos[i].nombre === nombreAlumno){
+      let idAlumno = basededatos.alumnos[i].id;
+      for(let j=0; j < basededatos.calificaciones.length; j++){
+      
+        if (basededatos.calificaciones[j].alumno === idAlumno && basededatos.calificaciones[j].nota >= 4)
+        {
+          materiasAprobadas[k] = basededatos.materias[basededatos.calificaciones[j].materia];
+          k++;
+        }
+
+      }
+      break;
+    }
+  }
   // console.log(basededatos.alumnos);
-  return [];
+  return materiasAprobadas;
 };
 
 /**
