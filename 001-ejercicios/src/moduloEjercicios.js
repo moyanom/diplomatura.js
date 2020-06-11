@@ -87,37 +87,91 @@ export const materiasAprobadasByNombreAlumno = (nombreAlumno) => {
     }
  * @param {string} nombreUniversidad
  */
-export const expandirInfoUniversidadByNombre = (nombreUniversidad) => {
-  return {};
+
+
+
+ export const expandirInfoUniversidadByNombre = (nombreUniversidad) => {
+  
+  /*Obtengo la Universidad*/
+  const univer = basededatos.universidades.find(value => value.nombre === nombreUniversidad);
+
+  /*Obtengo las materias de la universidad*/
+  univer.materias = basededatos.materias.filter(value => value.universidad === univer.id);
+  
+  /*Obtengo los profesores de las materias de la universidad*/
+  univer.profesores = [];
+  univer.alumnos = [];
+  for (const mat of univer.materias) {
+    for (const profid of mat.profesores)
+      if (univer.profesores.findIndex( value => value.id === profid) === -1) 
+        univer.profesores.push(basededatos.profesores.find(value => value.id === profid));
+  }
+
+  /*Obtengo los alumnos de las materias de la universidad*/
+  for (const calif of basededatos.calificaciones){
+    if((univer.materias.findIndex(value => value.id === calif.materia) > -1) && (univer.alumnos.findIndex(value => value.id === calif.alumno) === -1)){
+      univer.alumnos.push(basededatos.alumnos.find(value => value.id === calif.alumno));
+    }
+  }
+  
+  
+  return univer;
 };
 
 // /**
 //  * Devuelve el promedio de edad de los alumnos.
 //  */
-// export const promedioDeEdad = () => {
-//   return [];
-// };
+const promedioArray = (numeros) => {
+  
+  if (numeros.length === 0) return 0;
+  
+  let suma = 0;
+  for(const valor of numeros){
+    suma += valor;
+  }
+  return  suma/numeros.length;
+}
+export const promedioDeEdad = () => promedioArray(basededatos.alumnos.map(value => value.edad));
 
 // /**
 //  * Devuelve la lista de alumnos con promedio mayor al numero pasado
 //  * por parametro.
 //  * @param {number} promedio
 //  */
-// export const alumnosConPromedioMayorA = (promedio) => {
-//   return [];
-// };
+const promedioAlumno = (idAlumno) => 
+ promedioArray(basededatos.calificaciones.filter(value => value.alumno === idAlumno).map(value => value.nota));
+
+export const alumnosConPromedioMayorA = (promedio) => {
+  let resultado = [];
+  for (const alu of basededatos.alumnos){
+    let promedioAl = promedioAlumno(alu.id);
+    if (promedioAl > promedio){
+      alu.promedio = promedioAl;
+      resultado.push(alu);
+    }
+  }
+  return resultado;
+ };
 
 // /**
 //  * Devuelve la lista de materias sin alumnos
 //  */
-// export const materiasSinAlumnosAnotados = () => {
-//   return [];
-// };
+export const materiasSinAlumnosAnotados = () => {
+  let resultado = [];
+  for (const mat of basededatos.materias){
+    if (basededatos.calificaciones.filter(value => value.materia === mat.id).length === 0)
+      resultado.push(mat);
+  }
+  return resultado;
+};
 
 // /**
 //  * Devuelve el promdedio de edad segun el id de la universidad.
 //  * @param {number} universidadId
 //  */
-// export const promedioDeEdadByUniversidadId = (universidadId) => {
-//   return [];
-// };
+
+export const promedioDeEdadByUniversidadId = (universidadId) => {
+  let uniExpand = expandirInfoUniversidadByNombre(basededatos.universidades.find(value => value.id === universidadId).nombre);
+  return promedioArray(uniExpand.alumnos.map(value => value.edad)); 
+
+};
